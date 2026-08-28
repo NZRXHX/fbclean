@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Link Resolver - Get Clean Video URL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+            padding: 2.5rem 2rem;
+            max-width: 750px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1b1f23;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .subhead {
+            color: #606770;
+            font-size: 0.95rem;
+            margin-bottom: 1.8rem;
+            border-left: 4px solid #1877f2;
+            padding-left: 1rem;
+            background: #f7f9fa;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.4;
+        }
+
+        .subhead code {
+            background: #e4e6eb;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            color: #1b1f23;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+        }
+
+        .input-row input {
+            flex: 1 1 240px;
+            padding: 0.85rem 1.2rem;
+            border: 1.5px solid #dddfe2;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            background: #f7f9fa;
+            transition: 0.15s ease;
+            outline: none;
+            color: #1b1f23;
+        }
+
+        .input-row input:focus {
+            border-color: #1877f2;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+        }
+
+        .input-row input::placeholder {
+            color: #a6aab0;
+            font-weight: 400;
+        }
+
+        .input-row button {
+            background: #1877f2;
+            border: none;
+            border-radius: 60px;
+            padding: 0.85rem 2.2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            border: 1.5px solid #1877f2;
+        }
+
+        .input-row button:hover:not(:disabled) {
+            background: #166fe5;
+            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.25);
+            transform: scale(0.97);
+        }
+
+        .input-row button:disabled {
+            background: #9cb9e8;
+            border-color: #9cb9e8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-area {
+            background: #f7f9fa;
+            border-radius: 20px;
+            padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+            margin-top: 1.8rem;
+            border: 1px solid #e4e6eb;
+            transition: 0.2s ease;
+        }
+
+        .output-area .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #606770;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .output-area .label .badge {
+            background: #d4dadf;
+            color: #1b1f23;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .result-box {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.6rem;
+            word-break: break-all;
+        }
+
+        .result-box a {
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1.5px dotted #c4cdd6;
+            padding-bottom: 0.1rem;
+            flex: 1;
+            min-width: 180px;
+            font-size: 0.95rem;
+        }
+
+        .result-box a:hover {
+            border-bottom-color: #1877f2;
+        }
+
+        .copy-btn {
+            background: #e4e6eb;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: #1b1f23;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: 0.1s ease;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #d2d5dc;
+            border-color: #b3b8c0;
+        }
+
+        .copy-btn:active {
+            background: #c0c5ce;
+            transform: scale(0.95);
+        }
+
+        .toast {
+            background: #1b1f23;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .footnote {
+            margin-top: 1.8rem;
+            font-size: 0.8rem;
+            color: #606770;
+            border-top: 1px solid #e4e6eb;
+            padding-top: 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .footnote code {
+            background: #e4e6eb;
+            padding: 0.2rem 0.5rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: #1b1f23;
+        }
+
+        .example {
+            color: #1877f2;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: underline dotted #8a9aa8;
+        }
+
+        .example:hover {
+            color: #0e5fcf;
+        }
+
+        .empty-state {
+            color: #8a9aa8;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem 1.2rem;
+            }
+            .input-row button {
+                width: 100%;
+                justify-content: center;
+            }
+            .result-box {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .copy-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>
+            <span>🔗</span> Facebook Link Resolver
+        </h1>
+        <div class="subhead">
+            Follow redirects to get the clean video URL · works like <code>curl -I</code> to extract <code>location</code> header
+        </div>
+
+        <div class="input-group">
+            <label>
+                📎 Facebook share link
+                <span style="background:#e4e6eb;padding:0.1rem 0.6rem;border-radius:30px;font-size:0.7rem;font-weight:600;color:#4b4f56;">required</span>
+            </label>
+            <div class="input-row">
+                <input type="text" id="fbLinkInput" placeholder="https://web.facebook.com/share/r/19B8Zpc5yv/" value="https://web.facebook.com/share/r/19B8Zpc5yv/">
+                <button id="resolveBtn">🚀 Resolve</button>
+            </div>
+        </div>
+
+        <div class="output-area" id="outputArea">
+            <div class="label">
+                <span>📋 Clean video URL</span>
+                <span class="badge">from Location header</span>
+            </div>
+            <div class="result-box" id="resultBox">
+                <a href="#" id="cleanLinkDisplay" target="_blank" rel="noopener noreferrer" class="empty-state">paste a link and click Resolve</a>
+                <button class="copy-btn" id="copyBtn">📄 Copy</button>
+            </div>
+            <div id="toastMessage" class="toast">✓ Copied to clipboard</div>
+        </div>
+
+        <div class="footnote">
+            <span>⚡ fetches the redirect <code>Location</code> header without opening a browser</span>
+            <span class="example" id="exampleLink">↻ try example</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const inputField = document.getElementById('fbLinkInput');
+            const resolveBtn = document.getElementById('resolveBtn');
+            const cleanLinkDisplay = document.getElementById('cleanLinkDisplay');
+            const copyBtn = document.getElementById('copyBtn');
+            const toast = document.getElementById('toastMessage');
+            const exampleTrigger = document.getElementById('exampleLink');
+
+            // ---- resolve using a CORS proxy ----
+            async function resolveFacebookLink(shareUrl) {
+                if (!shareUrl || shareUrl.trim() === '') {
+                    throw new Error('Please enter a Facebook link');
+                }
+
+                // Clean up the URL
+                let url = shareUrl.trim();
+                
+                // If it doesn't have a protocol, add https://
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+
+                // Use a CORS proxy to fetch the headers
+                // This is a free public proxy - you might want to host your own
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+                }
+
+                // The proxy returns the HTML content, we need to parse it to find the redirect
+                const html = await response.text();
+                
+                // Look for the meta refresh or JavaScript redirect
+                // Facebook typically uses a meta refresh with the URL in the content attribute
+                const metaRefresh = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']0;\s*URL=([^"']+)["'][^>]*>/i);
+                if (metaRefresh && metaRefresh[1]) {
+                    return metaRefresh[1];
+                }
+
+                // Look for window.location redirect in JavaScript
+                const jsRedirect = html.match(/window\.location\.(?:href|replace)\s*=\s*["']([^"']+)["']/i);
+                if (jsRedirect && jsRedirect[1]) {
+                    return jsRedirect[1];
+                }
+
+                // If we can't find a redirect, try to extract the video ID from the HTML
+                const videoMatch = html.match(/https:\/\/web\.facebook\.com\/reel\/\d+/);
+                if (videoMatch) {
+                    return videoMatch[0];
+                }
+
+                // If we still can't find it, the URL might already be the final URL
+                if (url.includes('/reel/') || url.includes('/videos/')) {
+                    return url;
+                }
+
+                throw new Error('Could not find video URL in the page. The link might be invalid or require login.');
+            }
+
+            // ---- update UI ----
+            async function resolveAndUpdate() {
+                const rawInput = inputField.value.trim();
+                
+                if (!rawInput) {
+                    cleanLinkDisplay.textContent = '⛔ Please enter a link';
+                    cleanLinkDisplay.href = '#';
+                    cleanLinkDisplay.className = 'empty-state';
+                    return;
+                }
+
+                // Disable button and show loading
+                resolveBtn.disabled = true;
+                resolveBtn.innerHTML = '<span class="loading-spinner"></span> Resolving...';
+                cleanLinkDisplay.textContent = '⏳ Resolving...';
+                cleanLinkDisplay.href = '#';
+                cleanLinkDisplay.className = 'empty-state';
+
+                try {
+                    const resolvedUrl = await resolveFacebookLink(rawInput);
+                    
+                    // Clean up the resolved URL - remove tracking parameters
+                    let cleanUrl = resolvedUrl;
+                    if (cleanUrl.includes('?')) {
+                        const urlObj = new URL(cleanUrl);
+                        // Keep only the path, remove all query parameters
+                        cleanUrl = urlObj.origin + urlObj.pathname;
+                    }
+                    
+                    cleanLinkDisplay.textContent = cleanUrl;
+                    cleanLinkDisplay.href = cleanUrl;
+                    cleanLinkDisplay.className = '';
+                    cleanLinkDisplay.target = '_blank';
+                    cleanLinkDisplay.rel = 'noopener noreferrer';
+                    
+                    toast.textContent = '✓ Resolved successfully!';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 2000);
+                    
+                } catch (error) {
+                    cleanLinkDisplay.textContent = '❌ ' + error.message;
+                    cleanLinkDisplay.href = '#';
+                    cleanLinkDisplay.className = 'empty-state';
+                    
+                    toast.textContent = '⚠️ ' + error.message;
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                } finally {
+                    resolveBtn.disabled = false;
+                    resolveBtn.innerHTML = '🚀 Resolve';
+                }
+            }
+
+            // ---- copy to clipboard ----
+            function copyCleanLink() {
+                const link = cleanLinkDisplay.textContent;
+                if (!link || link === 'paste a link and click Resolve' || link.startsWith('⛔') || link.startsWith('❌') || link.startsWith('⏳')) {
+                    toast.textContent = '⚠️ Nothing to copy';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 1600);
+                    return;
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(link).then(() => {
+                        toast.textContent = '✓ Copied to clipboard';
+                        toast.classList.add('show');
+                        setTimeout(() => toast.classList.remove('show'), 1600);
+                    }).catch(() => {
+                        fallbackCopy(link);
+                    });
+                } else {
+                    fallbackCopy(link);
+                }
+            }
+
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.top = '-9999px';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    toast.textContent = '✓ Copied to clipboard';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 1600);
+                } catch (_) {
+                    toast.textContent = '⚠️ Copy failed, select manually';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 2000);
+                }
+                document.body.removeChild(textarea);
+            }
+
+            // ---- event listeners ----
+            resolveBtn.addEventListener('click', resolveAndUpdate);
+
+            inputField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    resolveBtn.click();
+                }
+            });
+
+            copyBtn.addEventListener('click', copyCleanLink);
+
+            // Example link
+            exampleTrigger.addEventListener('click', function(e) {
+                const example = 'https://web.facebook.com/share/r/19B8Zpc5yv/';
+                inputField.value = example;
+                resolveBtn.click();
+            });
+
+            // Auto-resolve on page load with default value
+            window.addEventListener('load', function() {
+                const defaultValue = inputField.value.trim();
+                if (defaultValue !== '') {
+                    resolveBtn.click();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
