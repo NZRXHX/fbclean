@@ -3,43 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>py</title>
+    <title>Facebook Link Resolver - Pure JS</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #f0f2f5;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
         }
-
         .card {
             background: #ffffff;
             border-radius: 24px;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
             padding: 2.5rem 2rem;
             max-width: 750px;
             width: 100%;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
         }
-
         h1 {
             font-size: 1.8rem;
             font-weight: 600;
             color: #1b1f23;
+            margin-bottom: 0.3rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 0.3rem;
         }
-
         .subhead {
             color: #606770;
             font-size: 0.95rem;
@@ -50,29 +42,12 @@
             border-radius: 0 8px 8px 0;
             line-height: 1.4;
         }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .input-group label {
-            font-weight: 500;
-            color: #1b1f23;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
         .input-row {
             display: flex;
             flex-wrap: wrap;
             gap: 0.7rem;
+            margin-bottom: 1.5rem;
         }
-
         .input-row input {
             flex: 1 1 240px;
             padding: 0.85rem 1.2rem;
@@ -80,22 +55,14 @@
             border-radius: 60px;
             font-size: 0.95rem;
             background: #f7f9fa;
-            transition: 0.15s ease;
             outline: none;
-            color: #1b1f23;
+            transition: 0.15s ease;
         }
-
         .input-row input:focus {
             border-color: #1877f2;
             background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+            box-shadow: 0 0 0 3px rgba(24,119,242,0.15);
         }
-
-        .input-row input::placeholder {
-            color: #a6aab0;
-            font-weight: 400;
-        }
-
         .input-row button {
             background: #1877f2;
             border: none;
@@ -106,64 +73,33 @@
             color: white;
             cursor: pointer;
             transition: 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            white-space: nowrap;
             border: 1.5px solid #1877f2;
+            white-space: nowrap;
         }
-
         .input-row button:hover:not(:disabled) {
             background: #166fe5;
-            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.25);
             transform: scale(0.97);
         }
-
         .input-row button:disabled {
             background: #9cb9e8;
             border-color: #9cb9e8;
             cursor: not-allowed;
-            transform: none;
         }
-
         .output-area {
             background: #f7f9fa;
             border-radius: 20px;
-            padding: 1.5rem 1.5rem 1.2rem 1.5rem;
-            margin-top: 1.8rem;
+            padding: 1.5rem;
             border: 1px solid #e4e6eb;
-            transition: 0.2s ease;
+            margin-top: 0.5rem;
         }
-
-        .output-area .label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: #606770;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .output-area .label .badge {
-            background: #d4dadf;
-            color: #1b1f23;
-            font-size: 0.65rem;
-            padding: 0.15rem 0.7rem;
-            border-radius: 30px;
-            font-weight: 600;
-        }
-
         .result-box {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 0.75rem;
-            margin-top: 0.6rem;
             word-break: break-all;
+            margin-top: 0.5rem;
         }
-
         .result-box a {
             color: #1877f2;
             text-decoration: none;
@@ -172,13 +108,7 @@
             padding-bottom: 0.1rem;
             flex: 1;
             min-width: 180px;
-            font-size: 0.95rem;
         }
-
-        .result-box a:hover {
-            border-bottom-color: #1877f2;
-        }
-
         .copy-btn {
             background: #e4e6eb;
             border: none;
@@ -186,45 +116,42 @@
             border-radius: 40px;
             font-weight: 500;
             font-size: 0.8rem;
-            color: #1b1f23;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: 0.1s ease;
-            border: 1px solid transparent;
             white-space: nowrap;
         }
-
         .copy-btn:hover {
             background: #d2d5dc;
-            border-color: #b3b8c0;
         }
-
-        .copy-btn:active {
-            background: #c0c5ce;
-            transform: scale(0.95);
-        }
-
         .toast {
             background: #1b1f23;
             color: white;
             padding: 0.5rem 1.2rem;
             border-radius: 60px;
             font-size: 0.8rem;
-            font-weight: 500;
             display: inline-block;
             margin-top: 0.8rem;
             opacity: 0;
             transition: opacity 0.2s ease;
-            pointer-events: none;
         }
-
         .toast.show {
             opacity: 1;
-            pointer-events: auto;
         }
-
+        .empty-state {
+            color: #8a9aa8;
+            font-style: italic;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         .footnote {
             margin-top: 1.8rem;
             font-size: 0.8rem;
@@ -236,54 +163,13 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-
-        .footnote .status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-
-        .footnote .status.online {
-            background: #31a24c;
-        }
-
-        .footnote .status.offline {
-            background: #fa383e;
-        }
-
         .example {
             color: #1877f2;
             cursor: pointer;
             font-weight: 500;
             text-decoration: underline dotted #8a9aa8;
         }
-
-        .example:hover {
-            color: #0e5fcf;
-        }
-
-        .empty-state {
-            color: #8a9aa8;
-            font-style: italic;
-            font-weight: 400;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
+        .example:hover { color: #0e5fcf; }
         .method-tag {
             display: inline-block;
             background: #e4e6eb;
@@ -294,50 +180,21 @@
             color: #4b4f56;
             margin-top: 0.4rem;
         }
-
-        @media (max-width: 480px) {
-            .card {
-                padding: 1.5rem 1.2rem;
-            }
-            .input-row button {
-                width: 100%;
-                justify-content: center;
-            }
-            .result-box {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .copy-btn {
-                justify-content: center;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>
-            <span>🔗</span> Facebook Link Resolver
-        </h1>
+        <h1>🔗 Facebook Link Resolver</h1>
         <div class="subhead">
-            Follows redirects to get the clean video URL · uses <code>HEAD</code> request like <code>curl -I</code>
+            Pure JavaScript · uses CORS proxy to get the <code>Location</code> header
         </div>
 
-        <div class="input-group">
-            <label>
-                📎 Facebook share link
-                <span style="background:#e4e6eb;padding:0.1rem 0.6rem;border-radius:30px;font-size:0.7rem;font-weight:600;color:#4b4f56;">required</span>
-            </label>
-            <div class="input-row">
-                <input type="text" id="fbLinkInput" placeholder="https://web.facebook.com/share/r/19B8Zpc5yv/" value="https://web.facebook.com/share/r/19B8Zpc5yv/">
-                <button id="resolveBtn">🚀 Resolve</button>
-            </div>
+        <div class="input-row">
+            <input type="text" id="fbLinkInput" placeholder="https://web.facebook.com/share/r/19B8Zpc5yv/" value="https://web.facebook.com/share/r/19B8Zpc5yv/">
+            <button id="resolveBtn">🚀 Resolve</button>
         </div>
 
-        <div class="output-area" id="outputArea">
-            <div class="label">
-                <span>📋 Clean video URL</span>
-                <span class="badge">from Location header</span>
-            </div>
+        <div class="output-area">
             <div class="result-box" id="resultBox">
                 <a href="#" id="cleanLinkDisplay" target="_blank" rel="noopener noreferrer" class="empty-state">paste a link and click Resolve</a>
                 <button class="copy-btn" id="copyBtn">📄 Copy</button>
@@ -347,17 +204,13 @@
         </div>
 
         <div class="footnote">
-            <span>
-                <span class="status" id="apiStatus"></span>
-                <span id="apiStatusText">Checking API...</span>
-            </span>
+            <span>⚡ uses <code>corsproxy.io</code> · 100% client-side</span>
             <span class="example" id="exampleLink">↻ try example</span>
         </div>
     </div>
 
     <script>
         (function() {
-            const API_URL = 'http://localhost:5000';
             const inputField = document.getElementById('fbLinkInput');
             const resolveBtn = document.getElementById('resolveBtn');
             const cleanLinkDisplay = document.getElementById('cleanLinkDisplay');
@@ -365,58 +218,81 @@
             const toast = document.getElementById('toastMessage');
             const exampleTrigger = document.getElementById('exampleLink');
             const methodDisplay = document.getElementById('methodDisplay');
-            const apiStatus = document.getElementById('apiStatus');
-            const apiStatusText = document.getElementById('apiStatusText');
 
-            // ---- Check API status ----
-            async function checkAPIStatus() {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    if (response.ok) {
-                        apiStatus.className = 'status online';
-                        apiStatusText.textContent = 'API online';
-                    } else {
-                        apiStatus.className = 'status offline';
-                        apiStatusText.textContent = 'API error';
-                    }
-                } catch (error) {
-                    apiStatus.className = 'status offline';
-                    apiStatusText.textContent = 'API offline - start Python server';
-                }
-            }
+            // Use a free CORS proxy
+            const PROXY_URL = 'https://corsproxy.io/?';
 
-            // ---- resolve using backend API ----
             async function resolveFacebookLink(shareUrl) {
                 if (!shareUrl || shareUrl.trim() === '') {
                     throw new Error('Please enter a Facebook link');
                 }
 
-                const url = encodeURIComponent(shareUrl.trim());
-                const response = await fetch(`${API_URL}/resolve?url=${url}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
+                let url = shareUrl.trim();
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+
+                // First, try HEAD request through proxy to get Location header
+                try {
+                    const headResponse = await fetch(PROXY_URL + encodeURIComponent(url), {
+                        method: 'HEAD',
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            'Accept-Language': 'fr,fr-FR;q=0.9,en-US;q=0.8,en;q=0.7',
+                            'Sec-GPC': '1',
+                            'Upgrade-Insecure-Requests': '1',
+                        }
+                    });
+
+                    // Check if we got a redirect
+                    const location = headResponse.headers.get('location');
+                    if (location) {
+                        const cleanUrl = location.split('?')[0];
+                        return { success: true, url: cleanUrl, method: 'HEAD redirect' };
                     }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `API error: ${response.status}`);
+                } catch (e) {
+                    console.log('HEAD request failed, trying GET...', e);
                 }
 
-                const data = await response.json();
-                
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to resolve link');
-                }
+                // If HEAD didn't work, try GET and parse HTML
+                try {
+                    const getResponse = await fetch(PROXY_URL + encodeURIComponent(url), {
+                        method: 'GET',
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        }
+                    });
 
-                return data;
+                    const html = await getResponse.text();
+
+                    // Look for meta refresh
+                    const metaMatch = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']0;\s*URL=([^"'\s]+)/i);
+                    if (metaMatch) {
+                        const cleanUrl = metaMatch[1].split('?')[0];
+                        return { success: true, url: cleanUrl, method: 'meta refresh' };
+                    }
+
+                    // Look for JavaScript redirect
+                    const jsMatch = html.match(/window\.location\.(?:href|replace)\s*=\s*["']([^"']+)["']/i);
+                    if (jsMatch) {
+                        const cleanUrl = jsMatch[1].split('?')[0];
+                        return { success: true, url: cleanUrl, method: 'JavaScript redirect' };
+                    }
+
+                    // Look for any video URL in the page
+                    const videoMatch = html.match(/https:\/\/web\.facebook\.com\/(?:reel|watch|videos?)\/\d+/);
+                    if (videoMatch) {
+                        return { success: true, url: videoMatch[0], method: 'page scan' };
+                    }
+
+                    throw new Error('Could not find video URL in the page');
+                } catch (error) {
+                    throw new Error(`Failed to resolve: ${error.message}`);
+                }
             }
 
-            // ---- update UI ----
             async function resolveAndUpdate() {
                 const rawInput = inputField.value.trim();
                 
@@ -428,7 +304,6 @@
                     return;
                 }
 
-                // Disable button and show loading
                 resolveBtn.disabled = true;
                 resolveBtn.innerHTML = '<span class="loading-spinner"></span> Resolving...';
                 cleanLinkDisplay.textContent = '⏳ Resolving...';
@@ -439,18 +314,14 @@
                 try {
                     const result = await resolveFacebookLink(rawInput);
                     
-                    // Use the clean URL if available, otherwise the resolved URL
-                    const finalUrl = result.clean_url || result.resolved_url;
-                    
-                    cleanLinkDisplay.textContent = finalUrl;
-                    cleanLinkDisplay.href = finalUrl;
+                    cleanLinkDisplay.textContent = result.url;
+                    cleanLinkDisplay.href = result.url;
                     cleanLinkDisplay.className = '';
                     cleanLinkDisplay.target = '_blank';
                     cleanLinkDisplay.rel = 'noopener noreferrer';
                     
-                    // Show which method was used
                     if (result.method) {
-                        methodDisplay.textContent = `📍 Resolved via: ${result.method.replace('_', ' ')}`;
+                        methodDisplay.textContent = `📍 ${result.method}`;
                         methodDisplay.style.display = 'inline-block';
                     }
                     
@@ -473,7 +344,6 @@
                 }
             }
 
-            // ---- copy to clipboard ----
             function copyCleanLink() {
                 const link = cleanLinkDisplay.textContent;
                 if (!link || link === 'paste a link and click Resolve' || link.startsWith('⛔') || link.startsWith('❌') || link.startsWith('⏳')) {
@@ -488,9 +358,7 @@
                         toast.textContent = '✓ Copied to clipboard';
                         toast.classList.add('show');
                         setTimeout(() => toast.classList.remove('show'), 1600);
-                    }).catch(() => {
-                        fallbackCopy(link);
-                    });
+                    }).catch(() => fallbackCopy(link));
                 } else {
                     fallbackCopy(link);
                 }
@@ -517,35 +385,18 @@
                 document.body.removeChild(textarea);
             }
 
-            // ---- event listeners ----
+            // Event listeners
             resolveBtn.addEventListener('click', resolveAndUpdate);
-
-            inputField.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    resolveBtn.click();
-                }
-            });
-
+            inputField.addEventListener('keydown', (e) => { if (e.key === 'Enter') resolveBtn.click(); });
             copyBtn.addEventListener('click', copyCleanLink);
-
-            // Example link
-            exampleTrigger.addEventListener('click', function(e) {
-                const example = 'https://web.facebook.com/share/r/19B8Zpc5yv/';
-                inputField.value = example;
+            exampleTrigger.addEventListener('click', () => {
+                inputField.value = 'https://web.facebook.com/share/r/19B8Zpc5yv/';
                 resolveBtn.click();
             });
 
-            // Check API status on load
-            checkAPIStatus();
-            setInterval(checkAPIStatus, 30000);
-
-            // Auto-resolve on page load with default value
-            window.addEventListener('load', function() {
-                const defaultValue = inputField.value.trim();
-                if (defaultValue !== '') {
-                    setTimeout(resolveAndUpdate, 500);
-                }
+            // Auto-resolve on load
+            window.addEventListener('load', () => {
+                setTimeout(resolveAndUpdate, 500);
             });
         })();
     </script>
