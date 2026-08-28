@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Link Resolver - Get Clean Video URL</title>
+    <title>py</title>
     <style>
         * {
             margin: 0;
@@ -49,13 +49,6 @@
             background: #f7f9fa;
             border-radius: 0 8px 8px 0;
             line-height: 1.4;
-        }
-
-        .subhead code {
-            background: #e4e6eb;
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
         }
 
         .input-group {
@@ -244,12 +237,20 @@
             gap: 0.5rem;
         }
 
-        .footnote code {
-            background: #e4e6eb;
-            padding: 0.2rem 0.5rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            color: #1b1f23;
+        .footnote .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .footnote .status.online {
+            background: #31a24c;
+        }
+
+        .footnote .status.offline {
+            background: #fa383e;
         }
 
         .example {
@@ -283,6 +284,17 @@
             to { transform: rotate(360deg); }
         }
 
+        .method-tag {
+            display: inline-block;
+            background: #e4e6eb;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #4b4f56;
+            margin-top: 0.4rem;
+        }
+
         @media (max-width: 480px) {
             .card {
                 padding: 1.5rem 1.2rem;
@@ -307,7 +319,7 @@
             <span>🔗</span> Facebook Link Resolver
         </h1>
         <div class="subhead">
-            Follow redirects to get the clean video URL · works like <code>curl -I</code> to extract <code>location</code> header
+            Follows redirects to get the clean video URL · uses <code>HEAD</code> request like <code>curl -I</code>
         </div>
 
         <div class="input-group">
@@ -330,81 +342,78 @@
                 <a href="#" id="cleanLinkDisplay" target="_blank" rel="noopener noreferrer" class="empty-state">paste a link and click Resolve</a>
                 <button class="copy-btn" id="copyBtn">📄 Copy</button>
             </div>
+            <div id="methodDisplay" class="method-tag" style="display:none;"></div>
             <div id="toastMessage" class="toast">✓ Copied to clipboard</div>
         </div>
 
         <div class="footnote">
-            <span>⚡ fetches the redirect <code>Location</code> header without opening a browser</span>
+            <span>
+                <span class="status" id="apiStatus"></span>
+                <span id="apiStatusText">Checking API...</span>
+            </span>
             <span class="example" id="exampleLink">↻ try example</span>
         </div>
     </div>
 
     <script>
         (function() {
+            const API_URL = 'http://localhost:5000';
             const inputField = document.getElementById('fbLinkInput');
             const resolveBtn = document.getElementById('resolveBtn');
             const cleanLinkDisplay = document.getElementById('cleanLinkDisplay');
             const copyBtn = document.getElementById('copyBtn');
             const toast = document.getElementById('toastMessage');
             const exampleTrigger = document.getElementById('exampleLink');
+            const methodDisplay = document.getElementById('methodDisplay');
+            const apiStatus = document.getElementById('apiStatus');
+            const apiStatusText = document.getElementById('apiStatusText');
 
-            // ---- resolve using a CORS proxy ----
+            // ---- Check API status ----
+            async function checkAPIStatus() {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (response.ok) {
+                        apiStatus.className = 'status online';
+                        apiStatusText.textContent = 'API online';
+                    } else {
+                        apiStatus.className = 'status offline';
+                        apiStatusText.textContent = 'API error';
+                    }
+                } catch (error) {
+                    apiStatus.className = 'status offline';
+                    apiStatusText.textContent = 'API offline - start Python server';
+                }
+            }
+
+            // ---- resolve using backend API ----
             async function resolveFacebookLink(shareUrl) {
                 if (!shareUrl || shareUrl.trim() === '') {
                     throw new Error('Please enter a Facebook link');
                 }
 
-                // Clean up the URL
-                let url = shareUrl.trim();
-                
-                // If it doesn't have a protocol, add https://
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-
-                // Use a CORS proxy to fetch the headers
-                // This is a free public proxy - you might want to host your own
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-                
-                const response = await fetch(proxyUrl, {
+                const url = encodeURIComponent(shareUrl.trim());
+                const response = await fetch(`${API_URL}/resolve?url=${url}`, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept': 'application/json',
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `API error: ${response.status}`);
                 }
 
-                // The proxy returns the HTML content, we need to parse it to find the redirect
-                const html = await response.text();
+                const data = await response.json();
                 
-                // Look for the meta refresh or JavaScript redirect
-                // Facebook typically uses a meta refresh with the URL in the content attribute
-                const metaRefresh = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']0;\s*URL=([^"']+)["'][^>]*>/i);
-                if (metaRefresh && metaRefresh[1]) {
-                    return metaRefresh[1];
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to resolve link');
                 }
 
-                // Look for window.location redirect in JavaScript
-                const jsRedirect = html.match(/window\.location\.(?:href|replace)\s*=\s*["']([^"']+)["']/i);
-                if (jsRedirect && jsRedirect[1]) {
-                    return jsRedirect[1];
-                }
-
-                // If we can't find a redirect, try to extract the video ID from the HTML
-                const videoMatch = html.match(/https:\/\/web\.facebook\.com\/reel\/\d+/);
-                if (videoMatch) {
-                    return videoMatch[0];
-                }
-
-                // If we still can't find it, the URL might already be the final URL
-                if (url.includes('/reel/') || url.includes('/videos/')) {
-                    return url;
-                }
-
-                throw new Error('Could not find video URL in the page. The link might be invalid or require login.');
+                return data;
             }
 
             // ---- update UI ----
@@ -415,6 +424,7 @@
                     cleanLinkDisplay.textContent = '⛔ Please enter a link';
                     cleanLinkDisplay.href = '#';
                     cleanLinkDisplay.className = 'empty-state';
+                    methodDisplay.style.display = 'none';
                     return;
                 }
 
@@ -424,23 +434,25 @@
                 cleanLinkDisplay.textContent = '⏳ Resolving...';
                 cleanLinkDisplay.href = '#';
                 cleanLinkDisplay.className = 'empty-state';
+                methodDisplay.style.display = 'none';
 
                 try {
-                    const resolvedUrl = await resolveFacebookLink(rawInput);
+                    const result = await resolveFacebookLink(rawInput);
                     
-                    // Clean up the resolved URL - remove tracking parameters
-                    let cleanUrl = resolvedUrl;
-                    if (cleanUrl.includes('?')) {
-                        const urlObj = new URL(cleanUrl);
-                        // Keep only the path, remove all query parameters
-                        cleanUrl = urlObj.origin + urlObj.pathname;
-                    }
+                    // Use the clean URL if available, otherwise the resolved URL
+                    const finalUrl = result.clean_url || result.resolved_url;
                     
-                    cleanLinkDisplay.textContent = cleanUrl;
-                    cleanLinkDisplay.href = cleanUrl;
+                    cleanLinkDisplay.textContent = finalUrl;
+                    cleanLinkDisplay.href = finalUrl;
                     cleanLinkDisplay.className = '';
                     cleanLinkDisplay.target = '_blank';
                     cleanLinkDisplay.rel = 'noopener noreferrer';
+                    
+                    // Show which method was used
+                    if (result.method) {
+                        methodDisplay.textContent = `📍 Resolved via: ${result.method.replace('_', ' ')}`;
+                        methodDisplay.style.display = 'inline-block';
+                    }
                     
                     toast.textContent = '✓ Resolved successfully!';
                     toast.classList.add('show');
@@ -450,6 +462,7 @@
                     cleanLinkDisplay.textContent = '❌ ' + error.message;
                     cleanLinkDisplay.href = '#';
                     cleanLinkDisplay.className = 'empty-state';
+                    methodDisplay.style.display = 'none';
                     
                     toast.textContent = '⚠️ ' + error.message;
                     toast.classList.add('show');
@@ -523,11 +536,15 @@
                 resolveBtn.click();
             });
 
+            // Check API status on load
+            checkAPIStatus();
+            setInterval(checkAPIStatus, 30000);
+
             // Auto-resolve on page load with default value
             window.addEventListener('load', function() {
                 const defaultValue = inputField.value.trim();
                 if (defaultValue !== '') {
-                    resolveBtn.click();
+                    setTimeout(resolveAndUpdate, 500);
                 }
             });
         })();
