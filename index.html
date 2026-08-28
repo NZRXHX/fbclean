@@ -3,402 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Link Resolver - Pure JS</title>
+
+    <title>Facebook Reel Link Resolver</title>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background: #f0f2f5;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Arial, Helvetica, sans-serif;
         }
-        .card {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 2.5rem 2rem;
-            max-width: 750px;
+
+        .container {
             width: 100%;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            max-width: 650px;
+            padding: 35px;
+            background: #1e293b;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
+
         h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #1b1f23;
-            margin-bottom: 0.3rem;
+            margin: 0 0 10px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+        }
+
+        .description {
+            margin: 0 0 25px;
+            text-align: center;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .input-wrapper {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
-        .subhead {
-            color: #606770;
-            font-size: 0.95rem;
-            margin-bottom: 1.8rem;
-            border-left: 4px solid #1877f2;
-            padding-left: 1rem;
-            background: #f7f9fa;
-            border-radius: 0 8px 8px 0;
-            line-height: 1.4;
-        }
-        .input-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.7rem;
-            margin-bottom: 1.5rem;
-        }
-        .input-row input {
-            flex: 1 1 240px;
-            padding: 0.85rem 1.2rem;
-            border: 1.5px solid #dddfe2;
-            border-radius: 60px;
-            font-size: 0.95rem;
-            background: #f7f9fa;
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 14px;
+            border: 1px solid #475569;
+            border-radius: 9px;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 15px;
             outline: none;
-            transition: 0.15s ease;
         }
-        .input-row input:focus {
-            border-color: #1877f2;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(24,119,242,0.15);
+
+        input:focus {
+            border-color: #3b82f6;
         }
-        .input-row button {
-            background: #1877f2;
+
+        input::placeholder {
+            color: #64748b;
+        }
+
+        .resolve-button {
+            padding: 14px 20px;
             border: none;
-            border-radius: 60px;
-            padding: 0.85rem 2.2rem;
-            font-weight: 600;
-            font-size: 0.95rem;
+            border-radius: 9px;
+            background: #2563eb;
             color: white;
+            font-size: 15px;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.15s ease;
-            border: 1.5px solid #1877f2;
             white-space: nowrap;
         }
-        .input-row button:hover:not(:disabled) {
-            background: #166fe5;
-            transform: scale(0.97);
+
+        .resolve-button:hover {
+            background: #3b82f6;
         }
-        .input-row button:disabled {
-            background: #9cb9e8;
-            border-color: #9cb9e8;
+
+        .resolve-button:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
-        .output-area {
-            background: #f7f9fa;
-            border-radius: 20px;
-            padding: 1.5rem;
-            border: 1px solid #e4e6eb;
-            margin-top: 0.5rem;
+
+        #result {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #0f172a;
         }
-        .result-box {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.75rem;
+
+        .result-title {
+            margin-bottom: 10px;
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .reel-link {
+            display: block;
+            padding: 13px;
+            margin-bottom: 12px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #60a5fa;
+            background: #1e293b;
             word-break: break-all;
-            margin-top: 0.5rem;
-        }
-        .result-box a {
-            color: #1877f2;
             text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1.5px dotted #c4cdd6;
-            padding-bottom: 0.1rem;
-            flex: 1;
-            min-width: 180px;
         }
-        .copy-btn {
-            background: #e4e6eb;
+
+        .reel-link:hover {
+            text-decoration: underline;
+        }
+
+        .copy-button {
+            width: 100%;
+            padding: 12px;
             border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.8rem;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .copy-btn:hover {
-            background: #d2d5dc;
-        }
-        .toast {
-            background: #1b1f23;
+            border-radius: 8px;
+            background: #334155;
             color: white;
-            padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-top: 0.8rem;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .toast.show {
-            opacity: 1;
-        }
-        .empty-state {
-            color: #8a9aa8;
-            font-style: italic;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .footnote {
-            margin-top: 1.8rem;
-            font-size: 0.8rem;
-            color: #606770;
-            border-top: 1px solid #e4e6eb;
-            padding-top: 1.4rem;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .example {
-            color: #1877f2;
+            font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 500;
-            text-decoration: underline dotted #8a9aa8;
         }
-        .example:hover { color: #0e5fcf; }
-        .method-tag {
-            display: inline-block;
-            background: #e4e6eb;
-            padding: 0.1rem 0.6rem;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: #4b4f56;
-            margin-top: 0.4rem;
+
+        .copy-button:hover {
+            background: #475569;
+        }
+
+        .error {
+            color: #f87171;
+            line-height: 1.5;
+        }
+
+        .loading {
+            color: #94a3b8;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .input-wrapper {
+                flex-direction: column;
+            }
+
+            .resolve-button {
+                width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="card">
-        <h1>🔗 Facebook Link Resolver</h1>
-        <div class="subhead">
-            Pure JavaScript · uses CORS proxy to get the <code>Location</code> header
-        </div>
 
-        <div class="input-row">
-            <input type="text" id="fbLinkInput" placeholder="https://web.facebook.com/share/r/19B8Zpc5yv/" value="https://web.facebook.com/share/r/19B8Zpc5yv/">
-            <button id="resolveBtn">🚀 Resolve</button>
-        </div>
+<div class="container">
 
-        <div class="output-area">
-            <div class="result-box" id="resultBox">
-                <a href="#" id="cleanLinkDisplay" target="_blank" rel="noopener noreferrer" class="empty-state">paste a link and click Resolve</a>
-                <button class="copy-btn" id="copyBtn">📄 Copy</button>
-            </div>
-            <div id="methodDisplay" class="method-tag" style="display:none;"></div>
-            <div id="toastMessage" class="toast">✓ Copied to clipboard</div>
-        </div>
+    <h1>Facebook Reel Link Resolver</h1>
 
-        <div class="footnote">
-            <span>⚡ uses <code>corsproxy.io</code> · 100% client-side</span>
-            <span class="example" id="exampleLink">↻ try example</span>
-        </div>
+    <p class="description">
+        Paste a Facebook share link and get the direct Reel link.
+    </p>
+
+    <div class="input-wrapper">
+
+        <input
+            id="facebookUrl"
+            type="url"
+            placeholder="https://web.facebook.com/share/r/..."
+            autocomplete="off"
+        >
+
+        <button
+            id="resolveButton"
+            class="resolve-button"
+        >
+            Resolve
+        </button>
+
     </div>
 
-    <script>
-        (function() {
-            const inputField = document.getElementById('fbLinkInput');
-            const resolveBtn = document.getElementById('resolveBtn');
-            const cleanLinkDisplay = document.getElementById('cleanLinkDisplay');
-            const copyBtn = document.getElementById('copyBtn');
-            const toast = document.getElementById('toastMessage');
-            const exampleTrigger = document.getElementById('exampleLink');
-            const methodDisplay = document.getElementById('methodDisplay');
+    <div id="result"></div>
 
-            // Use a free CORS proxy
-            const PROXY_URL = 'https://corsproxy.io/?';
+    <div class="footer">
+        Facebook Share → Reel URL
+    </div>
 
-            async function resolveFacebookLink(shareUrl) {
-                if (!shareUrl || shareUrl.trim() === '') {
-                    throw new Error('Please enter a Facebook link');
-                }
+</div>
 
-                let url = shareUrl.trim();
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
+<script>
 
-                // First, try HEAD request through proxy to get Location header
-                try {
-                    const headResponse = await fetch(PROXY_URL + encodeURIComponent(url), {
-                        method: 'HEAD',
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                            'Accept-Language': 'fr,fr-FR;q=0.9,en-US;q=0.8,en;q=0.7',
-                            'Sec-GPC': '1',
-                            'Upgrade-Insecure-Requests': '1',
-                        }
-                    });
+    /*
+     * Your Cloudflare Worker
+     */
+    const WORKER_URL =
+        "https://facebook-reel-resolver.nzrxhx.workers.dev/";
 
-                    // Check if we got a redirect
-                    const location = headResponse.headers.get('location');
-                    if (location) {
-                        const cleanUrl = location.split('?')[0];
-                        return { success: true, url: cleanUrl, method: 'HEAD redirect' };
-                    }
-                } catch (e) {
-                    console.log('HEAD request failed, trying GET...', e);
-                }
+    const input = document.getElementById("facebookUrl");
+    const resolveButton = document.getElementById("resolveButton");
+    const result = document.getElementById("result");
 
-                // If HEAD didn't work, try GET and parse HTML
-                try {
-                    const getResponse = await fetch(PROXY_URL + encodeURIComponent(url), {
-                        method: 'GET',
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        }
-                    });
 
-                    const html = await getResponse.text();
+    /*
+     * Resolve when clicking the button
+     */
+    resolveButton.addEventListener("click", resolveReel);
 
-                    // Look for meta refresh
-                    const metaMatch = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']0;\s*URL=([^"'\s]+)/i);
-                    if (metaMatch) {
-                        const cleanUrl = metaMatch[1].split('?')[0];
-                        return { success: true, url: cleanUrl, method: 'meta refresh' };
-                    }
 
-                    // Look for JavaScript redirect
-                    const jsMatch = html.match(/window\.location\.(?:href|replace)\s*=\s*["']([^"']+)["']/i);
-                    if (jsMatch) {
-                        const cleanUrl = jsMatch[1].split('?')[0];
-                        return { success: true, url: cleanUrl, method: 'JavaScript redirect' };
-                    }
+    /*
+     * Also allow pressing Enter
+     */
+    input.addEventListener("keydown", function(event) {
 
-                    // Look for any video URL in the page
-                    const videoMatch = html.match(/https:\/\/web\.facebook\.com\/(?:reel|watch|videos?)\/\d+/);
-                    if (videoMatch) {
-                        return { success: true, url: videoMatch[0], method: 'page scan' };
-                    }
+        if (event.key === "Enter") {
+            resolveReel();
+        }
 
-                    throw new Error('Could not find video URL in the page');
-                } catch (error) {
-                    throw new Error(`Failed to resolve: ${error.message}`);
-                }
+    });
+
+
+    async function resolveReel() {
+
+        const facebookUrl = input.value.trim();
+
+        /*
+         * Validate input
+         */
+        if (!facebookUrl) {
+
+            showError("Please enter a Facebook share link.");
+
+            return;
+        }
+
+
+        try {
+
+            const parsedUrl = new URL(facebookUrl);
+
+            const hostname = parsedUrl.hostname.toLowerCase();
+
+            if (
+                !hostname.endsWith("facebook.com") &&
+                !hostname.endsWith("fb.watch")
+            ) {
+
+                showError("Please enter a valid Facebook URL.");
+
+                return;
             }
 
-            async function resolveAndUpdate() {
-                const rawInput = inputField.value.trim();
-                
-                if (!rawInput) {
-                    cleanLinkDisplay.textContent = '⛔ Please enter a link';
-                    cleanLinkDisplay.href = '#';
-                    cleanLinkDisplay.className = 'empty-state';
-                    methodDisplay.style.display = 'none';
-                    return;
-                }
+        } catch {
 
-                resolveBtn.disabled = true;
-                resolveBtn.innerHTML = '<span class="loading-spinner"></span> Resolving...';
-                cleanLinkDisplay.textContent = '⏳ Resolving...';
-                cleanLinkDisplay.href = '#';
-                cleanLinkDisplay.className = 'empty-state';
-                methodDisplay.style.display = 'none';
+            showError("The URL you entered is invalid.");
+
+            return;
+        }
+
+
+        /*
+         * Loading state
+         */
+        resolveButton.disabled = true;
+        resolveButton.textContent = "Resolving...";
+
+        result.style.display = "block";
+
+        result.innerHTML = `
+            <div class="loading">
+                Resolving Facebook link...
+            </div>
+        `;
+
+
+        try {
+
+            /*
+             * Send the Facebook URL to the Cloudflare Worker
+             */
+            const apiUrl =
+                WORKER_URL +
+                "?url=" +
+                encodeURIComponent(facebookUrl);
+
+
+            const response = await fetch(apiUrl);
+
+
+            /*
+             * Parse Worker response
+             */
+            const data = await response.json();
+
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "Unable to resolve the Facebook link."
+                );
+
+            }
+
+
+            /*
+             * Worker gives us something like:
+             *
+             * https://www.facebook.com/reel/906793715833527/?rdid=...
+             *
+             * We only want:
+             *
+             * https://www.facebook.com/reel/906793715833527/
+             */
+            const fullReelUrl = data.reelUrl;
+
+            const reelUrl = extractCleanReelUrl(fullReelUrl);
+
+
+            if (!reelUrl) {
+
+                throw new Error(
+                    "A Reel was found, but its ID could not be extracted."
+                );
+
+            }
+
+
+            showResult(reelUrl);
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(error.message);
+
+        } finally {
+
+            resolveButton.disabled = false;
+            resolveButton.textContent = "Resolve";
+
+        }
+
+    }
+
+
+    /*
+     * Extract only:
+     *
+     * https://www.facebook.com/reel/123456789/
+     *
+     * from the complete redirect URL.
+     */
+    function extractCleanReelUrl(url) {
+
+        try {
+
+            const parsed = new URL(url);
+
+            const match =
+                parsed.pathname.match(
+                    /^\/reel\/([0-9]+)\/?/
+                );
+
+
+            if (!match) {
+                return null;
+            }
+
+
+            const reelId = match[1];
+
+
+            return (
+                "https://www.facebook.com/reel/" +
+                reelId +
+                "/"
+            );
+
+        } catch {
+
+            return null;
+
+        }
+
+    }
+
+
+    /*
+     * Display successful result
+     */
+    function showResult(reelUrl) {
+
+        result.style.display = "block";
+
+        result.innerHTML = `
+            <div class="result-title">
+                ✓ Reel link found
+            </div>
+
+            <a
+                id="reelLink"
+                class="reel-link"
+                href="${escapeHtml(reelUrl)}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                ${escapeHtml(reelUrl)}
+            </a>
+
+            <button
+                id="copyButton"
+                class="copy-button"
+            >
+                Copy Reel Link
+            </button>
+        `;
+
+
+        document
+            .getElementById("copyButton")
+            .addEventListener("click", async function() {
 
                 try {
-                    const result = await resolveFacebookLink(rawInput);
-                    
-                    cleanLinkDisplay.textContent = result.url;
-                    cleanLinkDisplay.href = result.url;
-                    cleanLinkDisplay.className = '';
-                    cleanLinkDisplay.target = '_blank';
-                    cleanLinkDisplay.rel = 'noopener noreferrer';
-                    
-                    if (result.method) {
-                        methodDisplay.textContent = `📍 ${result.method}`;
-                        methodDisplay.style.display = 'inline-block';
-                    }
-                    
-                    toast.textContent = '✓ Resolved successfully!';
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 2000);
-                    
-                } catch (error) {
-                    cleanLinkDisplay.textContent = '❌ ' + error.message;
-                    cleanLinkDisplay.href = '#';
-                    cleanLinkDisplay.className = 'empty-state';
-                    methodDisplay.style.display = 'none';
-                    
-                    toast.textContent = '⚠️ ' + error.message;
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 3000);
-                } finally {
-                    resolveBtn.disabled = false;
-                    resolveBtn.innerHTML = '🚀 Resolve';
-                }
-            }
 
-            function copyCleanLink() {
-                const link = cleanLinkDisplay.textContent;
-                if (!link || link === 'paste a link and click Resolve' || link.startsWith('⛔') || link.startsWith('❌') || link.startsWith('⏳')) {
-                    toast.textContent = '⚠️ Nothing to copy';
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 1600);
-                    return;
+                    await navigator.clipboard.writeText(reelUrl);
+
+                    this.textContent = "✓ Copied!";
+
+                    setTimeout(() => {
+
+                        this.textContent = "Copy Reel Link";
+
+                    }, 1500);
+
+                } catch {
+
+                    /*
+                     * Fallback for browsers where Clipboard API
+                     * is unavailable.
+                     */
+                    const textarea =
+                        document.createElement("textarea");
+
+                    textarea.value = reelUrl;
+
+                    document.body.appendChild(textarea);
+
+                    textarea.select();
+
+                    document.execCommand("copy");
+
+                    textarea.remove();
+
+                    this.textContent = "✓ Copied!";
+
+                    setTimeout(() => {
+
+                        this.textContent = "Copy Reel Link";
+
+                    }, 1500);
+
                 }
 
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(link).then(() => {
-                        toast.textContent = '✓ Copied to clipboard';
-                        toast.classList.add('show');
-                        setTimeout(() => toast.classList.remove('show'), 1600);
-                    }).catch(() => fallbackCopy(link));
-                } else {
-                    fallbackCopy(link);
-                }
-            }
-
-            function fallbackCopy(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.top = '-9999px';
-                textarea.style.left = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    toast.textContent = '✓ Copied to clipboard';
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 1600);
-                } catch (_) {
-                    toast.textContent = '⚠️ Copy failed, select manually';
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 2000);
-                }
-                document.body.removeChild(textarea);
-            }
-
-            // Event listeners
-            resolveBtn.addEventListener('click', resolveAndUpdate);
-            inputField.addEventListener('keydown', (e) => { if (e.key === 'Enter') resolveBtn.click(); });
-            copyBtn.addEventListener('click', copyCleanLink);
-            exampleTrigger.addEventListener('click', () => {
-                inputField.value = 'https://web.facebook.com/share/r/19B8Zpc5yv/';
-                resolveBtn.click();
             });
 
-            // Auto-resolve on load
-            window.addEventListener('load', () => {
-                setTimeout(resolveAndUpdate, 500);
-            });
-        })();
-    </script>
+    }
+
+
+    /*
+     * Display error
+     */
+    function showError(message) {
+
+        result.style.display = "block";
+
+        result.innerHTML = `
+            <div class="error">
+                ✕ ${escapeHtml(message)}
+            </div>
+        `;
+
+    }
+
+
+    /*
+     * Prevent HTML injection when displaying URLs/errors
+     */
+    function escapeHtml(value) {
+
+        const div = document.createElement("div");
+
+        div.textContent = value;
+
+        return div.innerHTML;
+
+    }
+
+</script>
+
 </body>
 </html>
